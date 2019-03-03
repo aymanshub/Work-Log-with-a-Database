@@ -112,3 +112,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.idea/workspace.xml
+.idea/Work-Log-with-a-Database.iml
+.idea/vcs.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/encodings.xml
+.idea/codeStyles/Project.xml
+.idea/codeStyles/codeStyleConfig.xml
