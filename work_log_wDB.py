@@ -1,71 +1,81 @@
 """
 Python Web Development Techdegree
-Project 3 - Work Log with a Database
+Project 4 - Work Log with a Database
 --------------------------------
 Developed by: Ayman Said
 Mar-2019
 """
 import os
+import datetime
 from collections import OrderedDict
-# import util
+from peewee import *
+
+import util
 # import params
 # from tasks import Task
+
+db = SqliteDatabase('work_log.db')
+
+
+class Entry(Model):
+
+    timestamp = DateTimeField(default=datetime.datetime.now, unique=True)
+    first_name = CharField(max_length=255)
+    last_name = CharField(max_length=255)
+    task_name = CharField(max_length=255)
+    time_spent = IntegerField(default=0)
+    notes = TextField()
+
+    class Meta:
+        database = db
+
+
+def initialize():
+    """Create the database and the table if they don't exist."""
+    db.connect()
+    db.create_tables([Entry], safe=True)
 
 
 def main_menu():
     """
     The startup program screen, the user is presented with
     the initial user options:
-    add a new entry or lookup previous entries.
-    1. Add a new entry
-    2. find previous entries
-    3. Quit the program
+    add a new entry or search for entries.
+    a) Add entry
+    s) Search entries
+    q) Quit the program
     :return: None
     """
-    while True:
+
+    menu_title = "What would you like to do?"
+    welcome_msg = "Welcome To Data Based Work Log"
+    menu = OrderedDict([
+        ('a', util.add_entry),
+        ('s', search_entries),
+        ('q', quit_program),
+    ])
+
+    choice = None
+    while choice != 'q':
         # clear the screen
         os.system("cls" if os.name == "nt" else "clear")
-        welcome_msg = "Welcome To Data Based Work Log"
-
         print("-" * len(welcome_msg))
         print(welcome_msg)
         print("-" * len(welcome_msg))
-
-        menu_title = "What would you like to do?"
-        menu_items = ["Add new entry",
-                      "Search in existing entries",
-                      "Quit program",
-                      ]
-
-        menu = OrderedDict([
-            ('a', add_entry),
-            ('v', view_entries),
-            ('s', search_entries),
-        ])
-
-
         print(menu_title)
-        items = enumerate(menu_items, start=1)
-        for i, item in items:
-            print('{}) {}'.format(i, item))
-        try:
-            user_input = int(input())
-            if not 1 <= user_input <= len(menu_items):
-                raise ValueError
-        except ValueError:
+        for key, value in menu.items():
+            print('{}) {}'.format(key, value.__doc__))
+        choice = input('Action: ').lower().strip()
+        if choice in menu:
+            menu[choice]()
+        else:
             input("Invalid selection!!!, press Enter to try again...")
             continue
-        else:
-            if user_input == 1:
-                util.add_entry()  # call add new entry function
-            elif user_input == 2:
-                search_menu()  # call search function
-            elif user_input == 3:
-                print("Quitting...Hope to see you soon!")
-                return
 
 
-def search_menu():
+
+def search_entries():
+    """Search for entries"""
     """
     The user will be presented with the various search options that can be
     performed on the work log.
@@ -114,6 +124,11 @@ def search_menu():
                     util.search_regex_pattern(tasks_dict)
 
 
+def quit_program():
+    """Quit the program"""
+    print("Quitting...Hope to see you soon!")
+
+
 if __name__ == '__main__':
-    if util.verify_log():
-        main_menu()
+    initialize()
+    main_menu()
