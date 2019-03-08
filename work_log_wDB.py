@@ -37,18 +37,14 @@ def initialize():
 
 
 def main_menu():
-    """
-    The startup program screen, the user is presented with
+    """The startup program screen, the user is presented with
     the initial user options:
-    add a new entry or search for entries.
-    a) Add entry
-    s) Search entries
-    q) Quit the program
+    add a new entry, search for entries or quit.
     :return: None
     """
-
     menu_title = "What would you like to do?"
     welcome_msg = "Welcome To Data Based Work Log"
+    # An OrderedDict representing the main menu items & their functions
     menu = OrderedDict([
         ('a', util.add_entry),
         ('s', search_entries),
@@ -64,6 +60,7 @@ def main_menu():
         print("-" * len(welcome_msg))
         print(menu_title)
         for key, value in menu.items():
+            # using the function docstring as the menu items
             print('{}) {}'.format(key, value.__doc__))
         choice = input('Action: ').lower().strip()
         if choice in menu:
@@ -71,7 +68,6 @@ def main_menu():
         else:
             input("Invalid selection!!!, press Enter to try again...")
             continue
-
 
 
 def search_entries():
@@ -84,12 +80,17 @@ def search_entries():
     while True:
         os.system("cls" if os.name == "nt" else "clear")  # clear the screen
         menu_title = "Please select your desirable search method:"
-        menu_items = ["Select a Date",
-                      "Range of Dates",
-                      "Time spent",
-                      "Exact Search",
-                      "Regex Pattern",
-                      ]
+        search_menu = OrderedDict([
+            ('e', util.find_employee()),
+            ('d', util.find_date()),
+            ('r', util.find_dates_range()),
+            ('t', util.find_time_spent()),
+            ('p', util.find_phrase()),
+            ('q', quit_menu()),
+
+        ])
+
+
         previous_menu = "Return to Main menu"
         print(menu_title)
         items = enumerate(menu_items, start=1)
