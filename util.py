@@ -1,6 +1,7 @@
 """
 
 """
+import os
 import entry
 
 
@@ -81,7 +82,39 @@ def find_dates_range():
 
 def find_time_spent():
     """Find by time spent"""
-    pass
+    while True:
+        # clear the screen
+        os.system("cls" if os.name == "nt" else "clear")
+        # display message accordingly if the work is empty
+        # if not tasks_dict:
+        #     print("No existing entries, work log is empty!")
+        # else:
+        print("Please enter a time spent value (rounded minutes)")
+        print("Enter 'r' to Return to Search menu: ")
+
+        time_spent = input()
+
+        if time_spent.upper() == 'r'.upper():
+            return  # go back to Search menu
+        try:
+            time_spent = int(time_spent)
+        except ValueError:
+            input("Invalid value!!!, press Enter to try again...")
+            continue
+        else:
+            #selected_tasks = []
+            # select * from entry where time_spent == time_spent
+            entries = entry.Entry.select()\
+                                .where(entry.Entry.time_spent == time_spent)
+            for i in entries:
+                print(i)
+
+            # for tasks in tasks_dict.values():
+            #     for task in tasks:
+            #         if task.time_spent == time_spent:
+            #             selected_tasks.append(task)
+            # display_tasks(selected_tasks)
+            return  # go back to Search menu
 
 
 def find_phrase():

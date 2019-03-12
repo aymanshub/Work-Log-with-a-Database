@@ -6,7 +6,7 @@ db = SqliteDatabase('work_log.db')
 
 class Entry(Model):
 
-    date = DateTimeField(default=datetime.date.today, unique=True)
+    date = DateTimeField(default=datetime.date.today, unique=False)
     first_name = CharField(max_length=255)
     last_name = CharField(max_length=255)
     task_name = CharField(max_length=255)
