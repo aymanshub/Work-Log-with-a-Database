@@ -8,7 +8,6 @@ Mar-2019
 import os
 
 from collections import OrderedDict
-import entry
 import util
 
 # import params
@@ -17,8 +16,8 @@ import util
 
 def initialize():
     """Create the database and the table if they don't exist."""
-    entry.db.connect()
-    entry.db.create_tables([entry.Entry], safe=True)
+    util.db.connect()
+    util.db.create_tables([util.Entry], safe=True)
 
 
 def main_menu():

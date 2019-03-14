@@ -2,7 +2,22 @@
 
 """
 import os
-import entry
+import datetime
+from peewee import *
+
+db = SqliteDatabase('work_log.db')
+
+
+class Entry(Model):
+    date = DateTimeField(default=datetime.date.today, unique=False)
+    first_name = CharField(max_length=255)
+    last_name = CharField(max_length=255)
+    task_name = CharField(max_length=255)
+    time_spent = IntegerField(default=0)
+    notes = TextField()
+
+    class Meta:
+        database = db
 
 
 def add_entry():
@@ -44,25 +59,19 @@ def add_entry():
     task_notes = input("Notes (Optional, you can leave this empty): ").strip()
 
     try:
-        entry.Entry.create(first_name=name['First'],
-                           last_name=name['Last'],
-                           task_name=task_name,
-                           time_spent=time_spent,
-                           notes=task_notes,
-                           )
+        Entry.create(first_name=name['First'],
+                     last_name=name['Last'],
+                     task_name=task_name,
+                     time_spent=time_spent,
+                     notes=task_notes,
+                     )
     except Exception as e:
         print("Error occurred while adding entry to {}\n{}"
-              .format(entry.db.database, e))
+              .format(db.database, e))
 
-    #     # create a new task instance
-    # new_task = Task(date=task_date,
-    #                 name=task_name,
-    #                 time_spent=time_spent,
-    #                 notes=task_notes)
-    # my name,
-    # a task name,
-    # a number of minutes spent working on it,
-    # and any additional notes I want to record.
+
+def display_entries(elist):
+    pass
 
 
 def find_employee():
@@ -85,10 +94,6 @@ def find_time_spent():
     while True:
         # clear the screen
         os.system("cls" if os.name == "nt" else "clear")
-        # display message accordingly if the work is empty
-        # if not tasks_dict:
-        #     print("No existing entries, work log is empty!")
-        # else:
         print("Please enter a time spent value (rounded minutes)")
         print("Enter 'r' to Return to Search menu: ")
 
@@ -102,18 +107,13 @@ def find_time_spent():
             input("Invalid value!!!, press Enter to try again...")
             continue
         else:
-            #selected_tasks = []
-            # select * from entry where time_spent == time_spent
-            entries = entry.Entry.select()\
-                                .where(entry.Entry.time_spent == time_spent)
-            for i in entries:
-                print(i)
+            selected_entries = []
+            entries = Entry.select() \
+                .where(Entry.time_spent == time_spent)
 
-            # for tasks in tasks_dict.values():
-            #     for task in tasks:
-            #         if task.time_spent == time_spent:
-            #             selected_tasks.append(task)
-            # display_tasks(selected_tasks)
+            for entry in entries:
+                selected_entries.append(entry)
+            display_entries(selected_entries)
             return  # go back to Search menu
 
 
