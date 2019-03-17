@@ -6,7 +6,7 @@ import datetime
 from peewee import *
 
 db = SqliteDatabase('work_log.db')
-
+date_fmt = '%d/%m/%Y'
 
 class Entry(Model):
     date = DateTimeField(default=datetime.date.today, unique=False)
@@ -18,6 +18,18 @@ class Entry(Model):
 
     class Meta:
         database = db
+
+    def __str__(self):
+        return "Employee: {name}\n" \
+               "Task: {task}\n" \
+               "Date: {date}\n" \
+               "Time Spent: {time_spent}\n" \
+               "Notes: {notes}"\
+            .format(name=self.first_name + ' ' + self.last_name,
+                    task=self.task_name,
+                    date=datetime.date.strftime(self.date, date_fmt),
+                    time_spent=self.time_spent,
+                    notes=self.notes)
 
 
 def add_entry():
@@ -70,8 +82,56 @@ def add_entry():
               .format(db.database, e))
 
 
-def display_entries(elist):
-    pass
+def display_entries(entries):
+    """
+    Display the selected entries resulted by a user search criteria.
+    :param entries: list of Task instances
+    :return: None
+    """
+    i = 0
+    while True:
+        # clear the screen
+        os.system("cls" if os.name == "nt" else "clear")
+        commands = "[R]eturn to search menu"
+        if not len(entries):
+            print("no entries have been found.".upper())
+        else:
+            print(entries[i])
+            print("\nResult {} of {}\n".format(i + 1, len(entries)))
+            commands = "[E]dit, [D]elete, " + commands
+            if i < len(entries) - 1:
+                # Add Next command
+                commands = "[N]ext, " + commands
+                if i > 0:
+                    # Add Back command
+                    commands = "[B]ack, " + commands
+            elif i > 0:
+                # Add Back command
+                commands = "[B]ack, " + commands
+
+        print(commands)
+        option = input()
+
+        if option.lower() in ['n', 'next'] and i < len(entries) - 1:
+            i += 1
+        elif option.lower() in ['b', 'back'] and i > 0:
+            i -= 1
+        elif option.lower() in ['e', 'edit'] and len(entries):
+            # clear the screen
+            os.system("cls" if os.name == "nt" else "clear")
+            print("Please edit the following task:\n{}".format(entries[i]))
+            # edit is equivalent to delete existing and make new entry
+            ## entries[i].delete_task_from_log()
+            ## add_new_entry(for_edit=True)
+            input("editing is not implemented yet!")  # remove after
+            return  # back to search menu
+        elif option.lower() in ['d', 'Delete'] and len(entries):
+            # call delete method
+            #  entries[i].delete_task_from_log()
+            input("deletion is not implemented yet!")  # remove after
+            return  # back to search menu
+        elif option.lower() in ['r', 'return']:
+            return  # back to search menu
 
 
 def find_employee():
