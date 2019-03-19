@@ -3,10 +3,12 @@
 """
 import os
 import datetime
+from collections import namedtuple
 from peewee import *
 
 db = SqliteDatabase('work_log.db')
 date_fmt = '%d/%m/%Y'
+
 
 class Entry(Model):
     date = DateTimeField(default=datetime.date.today, unique=False)
@@ -19,17 +21,93 @@ class Entry(Model):
     class Meta:
         database = db
 
+    def __repr__(self):
+        return 'Entry({self.first_name}, {self.last_name}, {self.task_name},' \
+               ' {self.time_spent}, {self.notes})'.format(self=self)
+
     def __str__(self):
         return "Employee: {name}\n" \
                "Task: {task}\n" \
                "Date: {date}\n" \
                "Time Spent: {time_spent}\n" \
                "Notes: {notes}"\
-            .format(name=self.first_name + ' ' + self.last_name,
+            .format(name=' '.join([self.first_name, self.last_name]),
                     task=self.task_name,
                     date=datetime.date.strftime(self.date, date_fmt),
                     time_spent=self.time_spent,
                     notes=self.notes)
+
+    def delete_task(self):
+        """Delete an entry."""
+        if input("Are you sure? [yN] ").lower() == 'y':
+            self.delete_instance()
+            input("Entry deleted!\nPlease press Enter to continue")
+            return True
+        return False
+
+    def edit_task(self):
+        """edit an entry"""
+        if input("Are you sure? [yN] ").lower() == 'y':
+            # clear the screen
+            os.system("cls" if os.name == "nt" else "clear")
+            print("Please edit the following task:\n{}".format(self))
+            edited = set_entry_core_values(for_edit=True)
+            self.date = edited.task_date
+            self.task_name = edited.task_name
+            self.time_spent = edited.time_spent
+            self.notes = edited.task_notes
+            self.save()
+            input("Entry successfully edited!\nPlease press Enter to continue")
+            return True
+        return False
+
+
+def set_entry_core_values(for_edit=False):
+
+    CoreValues = namedtuple('CoreValues', [
+        'task_name',
+        'task_date',
+        'time_spent',
+        'task_notes',
+        ])
+    # set task name
+    while True:
+        task_name = input("Task name: ").strip()
+        if not task_name:
+            print("Please enter a meaningful task name!")
+            continue
+        else:
+            break
+
+    # set task date
+    if for_edit:
+        while True:
+            # set task date
+            date_input = input("Task date (please use DD/MM/YYYY format): ")
+            try:
+                task_date = datetime.datetime.strptime(date_input,
+                                                       date_fmt).date()
+            except ValueError:
+                input("Invalid date!!!, press Enter to try again...")
+                continue
+            else:
+                break
+    else:
+        task_date = datetime.date.today()
+    # set time_spent
+    while True:
+        try:
+            time_spent = int(input("Time spent (rounded minutes): "))
+        except ValueError:
+            input("Invalid value!!!, press Enter to try again...")
+            continue
+        else:
+            break
+
+    # set task notes
+    task_notes = input("Notes (Optional, you can leave this empty): ").strip()
+
+    return CoreValues(task_name, task_date, time_spent, task_notes)
 
 
 def add_entry():
@@ -47,35 +125,38 @@ def add_entry():
                 continue
             else:
                 break
+    entry_core = set_entry_core_values()
 
-    # set task name
-    while True:
-        task_name = input("Task name: ").strip()
-        if not task_name:
-            print("Please enter a meaningful task name!")
-            continue
-        else:
-            break
 
-    # set time_spent
-    while True:
-        try:
-            time_spent = int(input("Time spent (rounded minutes): "))
-        except ValueError:
-            input("Invalid value!!!, press Enter to try again...")
-            continue
-        else:
-            break
-
-    # set task notes
-    task_notes = input("Notes (Optional, you can leave this empty): ").strip()
+    # # set task name
+    # while True:
+    #     task_name = input("Task name: ").strip()
+    #     if not task_name:
+    #         print("Please enter a meaningful task name!")
+    #         continue
+    #     else:
+    #         break
+    #
+    # # set time_spent
+    # while True:
+    #     try:
+    #         time_spent = int(input("Time spent (rounded minutes): "))
+    #     except ValueError:
+    #         input("Invalid value!!!, press Enter to try again...")
+    #         continue
+    #     else:
+    #         break
+    #
+    # # set task notes
+    # task_notes = input("Notes (Optional, you can leave this empty): ").strip()
 
     try:
         Entry.create(first_name=name['First'],
                      last_name=name['Last'],
-                     task_name=task_name,
-                     time_spent=time_spent,
-                     notes=task_notes,
+                     task_name=entry_core.task_name,
+                     date=entry_core.task_date,
+                     time_spent=entry_core.time_spent,
+                     notes=entry_core.task_notes,
                      )
     except Exception as e:
         print("Error occurred while adding entry to {}\n{}"
@@ -117,19 +198,17 @@ def display_entries(entries):
         elif option.lower() in ['b', 'back'] and i > 0:
             i -= 1
         elif option.lower() in ['e', 'edit'] and len(entries):
-            # clear the screen
-            os.system("cls" if os.name == "nt" else "clear")
-            print("Please edit the following task:\n{}".format(entries[i]))
-            # edit is equivalent to delete existing and make new entry
-            ## entries[i].delete_task_from_log()
-            ## add_new_entry(for_edit=True)
-            input("editing is not implemented yet!")  # remove after
-            return  # back to search menu
+            # call edit method
+            if entries[i].edit_task():
+                return  # back to search menu
+            else:
+                continue
         elif option.lower() in ['d', 'Delete'] and len(entries):
             # call delete method
-            #  entries[i].delete_task_from_log()
-            input("deletion is not implemented yet!")  # remove after
-            return  # back to search menu
+            if entries[i].delete_task():
+                return  # back to search menu
+            else:
+                continue
         elif option.lower() in ['r', 'return']:
             return  # back to search menu
 
