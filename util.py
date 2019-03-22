@@ -22,8 +22,12 @@ class Entry(Model):
         database = db
 
     def __repr__(self):
-        return 'Entry({self.first_name}, {self.last_name}, {self.task_name},' \
-               ' {self.time_spent}, {self.notes})'.format(self=self)
+        return 'Entry({self.date}, ' \
+               '{self.first_name}, ' \
+               '{self.last_name}, ' \
+               '{self.task_name},' \
+               ' {self.time_spent}, ' \
+               '{self.notes})'.format(self=self)
 
     def __str__(self):
         return "Employee: {name}\n" \
@@ -220,12 +224,49 @@ def find_employee():
 
 def find_date():
     """Find by date"""
-    pass
+    while True:
+        # clear the screen
+        os.system("cls" if os.name == "nt" else "clear")
+        print("From below dates list\nPlease select a date index:")
+        print("Enter 'r' to Return to Search menu: ")
+        dates_query = Entry\
+            .select(Entry.date)\
+            .distinct()\
+            .order_by(Entry.date.desc())
+        counter = 1
+        for record in dates_query:
+            print('{counter}.\t{date}'
+                  .format(counter=counter, date=record.date.strftime(date_fmt)))
+            counter += 1
+        user_input = input()
+        if user_input.upper() == 'r'.upper():
+            return  # return to Search menu
+        else:
+            try:
+                index = int(user_input)
+                if 1 <= index < counter:
+                    # locate records with selected index date and display
+                    selected_date = dates_query[index-1].date
+                    # entries = Entry.select() \
+                    #     .where(Entry.date.cast(datetime) == selected_date)
+                    entries = Entry.select().where(
+                        (Entry.date.year == selected_date.year) &
+                        (Entry.date.month == selected_date.month) &
+                        (Entry.date.day == selected_date.day))
+            except ValueError:
+                pass
+            else:
+                selected_entries = []
+                for entry in entries:
+                    selected_entries.append(entry)
+                display_entries(selected_entries)
+                return  # go back to Search menu
 
 
 def find_dates_range():
     """Find by dates range"""
-    pass
+
+
 
 
 def find_time_spent():
@@ -258,7 +299,16 @@ def find_time_spent():
 
 def find_phrase():
     """Find by a phrase"""
-    pass
+    #  task name or notes
+    phrase = 'was'
+    selected_entries = []
+    entries = Entry.select().where(
+        (Entry.task_name.contains(phrase)) |
+        (Entry.notes.contains(phrase)))
+    for entry in entries:
+        selected_entries.append(entry)
+    display_entries(selected_entries)
+    return  # go back to Search menu
 
 
 def quit_menu():
