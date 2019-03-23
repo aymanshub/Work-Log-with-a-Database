@@ -253,8 +253,11 @@ def find_date():
                         (Entry.date.year == selected_date.year) &
                         (Entry.date.month == selected_date.month) &
                         (Entry.date.day == selected_date.day))
+                else:
+                    raise ValueError
             except ValueError:
-                pass
+                input("Invalid selection, please press Enter to try again...")
+                continue
             else:
                 selected_entries = []
                 for entry in entries:
@@ -265,8 +268,33 @@ def find_date():
 
 def find_dates_range():
     """Find by dates range"""
-
-
+    while True:
+        # clear the screen
+        os.system("cls" if os.name == "nt" else "clear")
+        print("Please enter dates range, use DD/MM/YYYY format.")
+        print("Enter 'r' to Return to Search menu: ")
+        from_date = input("From date: ")
+        if from_date.upper() == 'r'.upper():
+            return  # go back to Search menu
+        to_date = input("To date: ")
+        if to_date.upper() == 'r'.upper():
+            return  # go back to Search menu
+        try:
+            from_date = datetime.datetime.strptime(from_date,
+                                                   date_fmt).date()
+            to_date = datetime.datetime.strptime(to_date,
+                                                 date_fmt).date()
+        except ValueError:
+            input("Invalid date!!!, press Enter to try again...")
+            continue
+        else:
+            entries = Entry.select().where(
+                Entry.date.between(from_date,to_date))
+            selected_entries = []
+            for entry in entries:
+                selected_entries.append(entry)
+            display_entries(selected_entries)
+            return  # go back to Search menu
 
 
 def find_time_spent():
