@@ -245,7 +245,7 @@ def find_date():
             try:
                 index = int(user_input)
                 if 1 <= index < counter:
-                    # locate records with selected index date and display
+                    # locate records with selected index date
                     selected_date = dates_query[index-1].date
                     # entries = Entry.select() \
                     #     .where(Entry.date.cast(datetime) == selected_date)
@@ -288,6 +288,7 @@ def find_dates_range():
             input("Invalid date!!!, press Enter to try again...")
             continue
         else:
+            # locate records within the requested dates range
             entries = Entry.select().where(
                 Entry.date.between(from_date,to_date))
             selected_entries = []
@@ -304,9 +305,7 @@ def find_time_spent():
         os.system("cls" if os.name == "nt" else "clear")
         print("Please enter a time spent value (rounded minutes)")
         print("Enter 'r' to Return to Search menu: ")
-
         time_spent = input()
-
         if time_spent.upper() == 'r'.upper():
             return  # go back to Search menu
         try:
@@ -316,6 +315,7 @@ def find_time_spent():
             continue
         else:
             selected_entries = []
+            # locate records with entered time spent
             entries = Entry.select() \
                 .where(Entry.time_spent == time_spent)
 
@@ -327,9 +327,13 @@ def find_time_spent():
 
 def find_phrase():
     """Find by a phrase"""
-    #  task name or notes
-    phrase = 'was'
+    # clear the screen
+    os.system("cls" if os.name == "nt" else "clear")
+    phrase = input("Please enter a phrase to find in the Work Log:\n").strip()
+
     selected_entries = []
+    # locate records which contains the entered phrase
+    # in task_name or notes fields
     entries = Entry.select().where(
         (Entry.task_name.contains(phrase)) |
         (Entry.notes.contains(phrase)))
