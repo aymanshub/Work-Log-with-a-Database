@@ -118,17 +118,16 @@ def add_entry():
     """Add a new entry"""
 
     # set employee name
-    name = {'First': None,
-            'Last': None,
-            }
-    for key in name.keys():
-        while True:
-            name[key] = input(key + " name: ").strip()
-            if not name[key]:
-                print("Please enter a meaningful name!")
-                continue
-            else:
-                break
+    while True:
+        name = input("Please enter your full name (first and last): ")
+        try:
+            first_name, last_name = name.split(None, 1)
+        except ValueError:
+            input("Not a valid full name!!!, press Enter to try again...")
+            continue
+        else:
+            break
+
     entry_core = set_entry_core_values()
 
 
@@ -155,8 +154,8 @@ def add_entry():
     # task_notes = input("Notes (Optional, you can leave this empty): ").strip()
 
     try:
-        Entry.create(first_name=name['First'],
-                     last_name=name['Last'],
+        Entry.create(first_name=first_name,
+                     last_name=last_name,
                      task_name=entry_core.task_name,
                      date=entry_core.task_date,
                      time_spent=entry_core.time_spent,
@@ -219,7 +218,7 @@ def display_entries(entries):
 
 def find_employee():
     """Find by employee name"""
-    pass
+    
 
 
 def find_date():
