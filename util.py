@@ -248,9 +248,11 @@ def look_for_partners(name):
                     # locate records with selected index date
                     first_name = potential_entries[index-1].first_name
                     last_name = potential_entries[index-1].last_name
-                    entries = Entry.select().where(
+                    entries = Entry.select()\
+                                   .where(
                                     (Entry.first_name == first_name) &
-                                    (Entry.last_name == last_name))
+                                    (Entry.last_name == last_name))\
+                                   .order_by(Entry.date)
                 else:
                     raise ValueError
             except ValueError:
