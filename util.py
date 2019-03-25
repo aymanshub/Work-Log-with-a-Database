@@ -35,7 +35,8 @@ class Entry(Model):
                "Date: {date}\n" \
                "Time Spent: {time_spent}\n" \
                "Notes: {notes}"\
-            .format(name=' '.join([self.first_name, self.last_name]),
+            .format(name=' '.join([str(self.first_name).title(),
+                                   str(self.last_name).title()]),
                     task=self.task_name,
                     date=datetime.date.strftime(self.date, date_fmt),
                     time_spent=self.time_spent,
@@ -154,8 +155,8 @@ def add_entry():
     # task_notes = input("Notes (Optional, you can leave this empty): ").strip()
 
     try:
-        Entry.create(first_name=first_name,
-                     last_name=last_name,
+        Entry.create(first_name=str(first_name).lower(),
+                     last_name=str(last_name).lower(),
                      task_name=entry_core.task_name,
                      date=entry_core.task_date,
                      time_spent=entry_core.time_spent,
@@ -216,9 +217,78 @@ def display_entries(entries):
             return  # back to search menu
 
 
+def look_for_partners(name):
+
+    potential_entries = Entry \
+        .select(Entry.first_name, Entry.last_name) \
+        .where((Entry.first_name == name) |
+               (Entry.last_name == name)) \
+        .distinct() \
+        .order_by(Entry.first_name, Entry.last_name)
+
+    if potential_entries:
+        while True:
+            # clear the screen
+            os.system("cls" if os.name == "nt" else "clear")
+            print("From below employees list\n"
+                  "Please select the employee index: ")
+            counter = 1
+            for entry in potential_entries:
+                print('{counter}.\t{name}'
+                      .format(counter=counter,
+                              name=' '.join([
+                                  str(entry.first_name).title(),
+                                  str(entry.last_name).title(),
+                              ])))
+                counter += 1
+            user_input = input()
+            try:
+                index = int(user_input)
+                if 1 <= index < counter:
+                    # locate records with selected index date
+                    first_name = potential_entries[index-1].first_name
+                    last_name = potential_entries[index-1].last_name
+                    entries = Entry.select().where(
+                                    (Entry.first_name == first_name) &
+                                    (Entry.last_name == last_name))
+                else:
+                    raise ValueError
+            except ValueError:
+                input("Invalid selection, please press Enter to try again...")
+                continue
+            else:
+                return entries
+    else:
+        return potential_entries
+
+
 def find_employee():
     """Find by employee name"""
-    
+    while True:
+        # clear the screen
+        os.system("cls" if os.name == "nt" else "clear")
+        print("Please, enter the employee name:")
+        name = input().strip().lower()
+        if name:
+            first_name, sep, last_name = name.partition(' ')
+            if last_name:
+                # we've got a full name and should search for exact match
+                last_name = last_name.strip() # avoid multiple spaces between first & last
+                entries = Entry.select().where(
+                    (Entry.first_name == first_name) &
+                    (Entry.last_name == last_name)
+                ).order_by(Entry.date)
+            else:
+                # name is not full, we'd search for multiple options
+                entries = look_for_partners(name)
+
+            selected_entries = []
+            for entry in entries:
+                selected_entries.append(entry)
+            display_entries(selected_entries)
+            return  # go back to Search menu
+        else:
+            continue
 
 
 def find_date():
@@ -226,10 +296,9 @@ def find_date():
     while True:
         # clear the screen
         os.system("cls" if os.name == "nt" else "clear")
-        print("From below dates list\nPlease select a date index:")
-        print("Enter 'r' to Return to Search menu: ")
-        dates_query = Entry\
-            .select(Entry.date)\
+        print("From below dates list\nPlease select a date index: ")
+        print("(Enter 'r' to Return to Search menu)")
+        dates_query = Entry.select(Entry.date)\
             .distinct()\
             .order_by(Entry.date.desc())
         counter = 1
@@ -271,7 +340,7 @@ def find_dates_range():
         # clear the screen
         os.system("cls" if os.name == "nt" else "clear")
         print("Please enter dates range, use DD/MM/YYYY format.")
-        print("Enter 'r' to Return to Search menu: ")
+        print("(Enter 'r' to Return to Search menu)")
         from_date = input("From date: ")
         if from_date.upper() == 'r'.upper():
             return  # go back to Search menu
@@ -302,8 +371,8 @@ def find_time_spent():
     while True:
         # clear the screen
         os.system("cls" if os.name == "nt" else "clear")
-        print("Please enter a time spent value (rounded minutes)")
-        print("Enter 'r' to Return to Search menu: ")
+        print("Please enter a time spent value (rounded minutes):")
+        print("(Enter 'r' to Return to Search menu)")
         time_spent = input()
         if time_spent.upper() == 'r'.upper():
             return  # go back to Search menu
