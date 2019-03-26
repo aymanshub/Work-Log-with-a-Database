@@ -130,30 +130,6 @@ def add_entry():
             break
 
     entry_core = set_entry_core_values()
-
-
-    # # set task name
-    # while True:
-    #     task_name = input("Task name: ").strip()
-    #     if not task_name:
-    #         print("Please enter a meaningful task name!")
-    #         continue
-    #     else:
-    #         break
-    #
-    # # set time_spent
-    # while True:
-    #     try:
-    #         time_spent = int(input("Time spent (rounded minutes): "))
-    #     except ValueError:
-    #         input("Invalid value!!!, press Enter to try again...")
-    #         continue
-    #     else:
-    #         break
-    #
-    # # set task notes
-    # task_notes = input("Notes (Optional, you can leave this empty): ").strip()
-
     try:
         Entry.create(first_name=str(first_name).lower(),
                      last_name=str(last_name).lower(),
@@ -318,7 +294,7 @@ def find_date():
                     # locate records with selected index date
                     selected_date = dates_query[index-1].date
                     # entries = Entry.select() \
-                    #     .where(Entry.date.cast(datetime) == selected_date)
+                    #   .where(Entry.date.cast(datetime.date) == selected_date)
                     entries = Entry.select().where(
                         (Entry.date.year == selected_date.year) &
                         (Entry.date.month == selected_date.month) &
