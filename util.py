@@ -180,17 +180,17 @@ def display_entries(entries):
         elif option.lower() in ['e', 'edit'] and len(entries):
             # call edit method
             if entries[i].edit_task():
-                return  # back to search menu
+                return True  # back to search menu
             else:
                 continue
         elif option.lower() in ['d', 'Delete'] and len(entries):
             # call delete method
             if entries[i].delete_task():
-                return  # back to search menu
+                return True  # back to search menu
             else:
                 continue
         elif option.lower() in ['r', 'return']:
-            return  # back to search menu
+            return True  # back to search menu
 
 
 def look_for_partners(name):
