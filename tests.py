@@ -6,11 +6,22 @@ import util
 import builtins
 import work_log_wDB
 import os
+from peewee import *
+
+
+# db_test = SqliteDatabase('work_logTests.db')
 date_fmt = '%d/%m/%Y'
+
+
+# def initialize_tests_db():
+#     """Create the database and the table if they don't exist."""
+#     db_test.connect()
+#     util.db.create_tables([util.Entry], safe=True)
 
 
 class EditDelete(unittest.TestCase):
     def setUp(self):
+        work_log_wDB.initialize()
         self.entry_sample = util.Entry.create(first_name='ayman',
                                               last_name='said',
                                               task_name='test Delete',
@@ -18,6 +29,13 @@ class EditDelete(unittest.TestCase):
                                               time_spent=30,
                                               notes='',
                                               )
+
+    def tearDown(self):
+        try:
+            util.Entry.delete().execute()
+        except:
+            pass
+        util.db.close()
 
     @mock.patch('builtins.print', autospec=True)
     @mock.patch.object(util, 'set_entry_core_values', autospec=True)
@@ -49,6 +67,7 @@ class EditDelete(unittest.TestCase):
 
 class Representations(unittest.TestCase):
     def setUp(self):
+        work_log_wDB.initialize()
         self.entry_sample = util.Entry.create(first_name='ayman',
                                               last_name='said',
                                               task_name='test str',
@@ -56,6 +75,13 @@ class Representations(unittest.TestCase):
                                               time_spent=30,
                                               notes='',
                                               )
+
+    def tearDown(self):
+        try:
+            util.Entry.delete().execute()
+        except:
+            pass
+        util.db.close()
 
     @mock.patch('os.system', autospec=True)
     @mock.patch('builtins.print', autospec=True)
@@ -120,7 +146,7 @@ class Representations(unittest.TestCase):
 
 class Menus(unittest.TestCase):
     @mock.patch('os.system', autospec=True)
-    @mock.patch('builtins.print', autospec=True)
+    @mock.patch('builtins.print', autospec=False)
     @mock.patch.object(util, 'add_entry', autospec=True)
     @mock.patch.object(work_log_wDB, 'search_entries', autospec=True)
     @mock.patch.object(work_log_wDB, 'quit_program', autospec=True)
@@ -163,6 +189,105 @@ class Menus(unittest.TestCase):
             mock_find_time_spent.assert_called_once_with()
             mock_find_phrase.assert_called_once_with()
             mock_quit_menu.assert_called_once_with()
+
+
+class SearchMethods(unittest.TestCase):
+    def setUp(self):
+        work_log_wDB.initialize()
+        self.entry_sample = util.Entry.create(first_name='ayman',
+                                              last_name='said',
+                                              task_name='test str',
+                                              date=datetime.date(2019, 3, 26),
+                                              time_spent=30,
+                                              notes='can you find this? in your test',
+                                              )
+
+    def tearDown(self):
+        try:
+            util.Entry.delete().execute()
+        except:
+            pass
+        util.db.close()
+
+    @mock.patch.object(util, 'display_entries', autospec=True)
+    def test_find_phrase(self, mock_display_entries):
+        with mock.patch('builtins.input', return_value="can"):
+            result = util.find_phrase()
+            self.assertEqual(1, result)
+            mock_display_entries.assert_called_once()
+
+    @mock.patch('builtins.print', autospec=True)
+    @mock.patch.object(util, 'display_entries', autospec=True)
+    def test_find_time_spent(self, mock_display_entries, mock_print):
+        with mock.patch('builtins.input', return_value="30"):
+            result = util.find_time_spent()
+            self.assertEqual(1, result)
+            mock_display_entries.assert_called_once()
+
+    @mock.patch('builtins.print', autospec=True)
+    @mock.patch.object(util, 'display_entries', autospec=True)
+    def test_find_date(self, mock_display_entries, mock_print):
+        with mock.patch('builtins.input', return_value="1"):
+            result = util.find_date()
+            self.assertEqual(1, result)
+            mock_display_entries.assert_called_once()
+
+    @mock.patch('builtins.print', autospec=True)
+    @mock.patch.object(util, 'display_entries', autospec=True)
+    def test_find_employee(self, mock_display_entries, mock_print):
+        with mock.patch('builtins.input', return_value="ayman said"):
+            result = util.find_employee()
+            self.assertEqual(1, result)
+            mock_display_entries.assert_called_once()
+
+    @mock.patch('builtins.print', autospec=True)
+    @mock.patch.object(util, 'display_entries', autospec=True)
+    def test_look_for_partners(self, mock_display_entries, mock_print):
+        with mock.patch('builtins.input', return_value="1"):
+            entries = util.look_for_partners("ayman")
+            self.assertEqual(1, len(entries))
+            mock_display_entries.assert_not_called()
+
+    @mock.patch('builtins.print', autospec=True)
+    def test_invalid_look_for_partners(self, mock_print):
+            entries = util.look_for_partners("George")
+            self.assertEqual(None, entries)
+
+
+    #find_dates_range
+    @mock.patch('builtins.print', autospec=True)
+    @mock.patch.object(util, 'display_entries', autospec=True)
+    def test_find_dates_range(self, mock_display_entries, mock_print):
+        with mock.patch('builtins.input', side_effect=['26/3/2019', '30/3/2019']):
+            result = util.find_dates_range()
+            self.assertEqual(1, result)
+            mock_display_entries.assert_called_once()
+
+
+class AddEntries(unittest.TestCase):
+    def setUp(self):
+        work_log_wDB.initialize()
+        self.entry_sample = util.Entry.create(first_name='ayman',
+                                              last_name='said',
+                                              task_name='test str',
+                                              date=datetime.date(2019, 3, 26),
+                                              time_spent=30,
+                                              notes='can you find this? in your test',
+                                              )
+
+    def tearDown(self):
+        try:
+            util.Entry.delete().execute()
+        except:
+            pass
+        util.db.close()
+
+    @mock.patch.object(util, 'set_entry_core_values', autospec=False)
+    @mock.patch.object(util.Entry, 'create', autospec=False)
+    def test_add_entry(self, mock_create, mock_set_entry_core_values):
+        with mock.patch('builtins.input', return_value='Lina Said'):
+                result = util.add_entry()
+                self.assertEqual(result, True)
 
 
 if __name__ == '__main__':

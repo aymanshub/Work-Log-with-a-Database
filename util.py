@@ -141,7 +141,9 @@ def add_entry():
     except Exception as e:
         print("Error occurred while adding entry to {}\n{}"
               .format(db.database, e))
-
+        return False
+    else:
+        return True
 
 def display_entries(entries):
     """
@@ -237,7 +239,7 @@ def look_for_partners(name):
             else:
                 return entries
     else:
-        return potential_entries
+        return None
 
 
 def find_employee():
@@ -264,7 +266,7 @@ def find_employee():
             for entry in entries:
                 selected_entries.append(entry)
             display_entries(selected_entries)
-            return  # go back to Search menu
+            return len(selected_entries)  # go back to Search menu
         else:
             continue
 
@@ -309,7 +311,7 @@ def find_date():
                 for entry in entries:
                     selected_entries.append(entry)
                 display_entries(selected_entries)
-                return  # go back to Search menu
+                return len(selected_entries)  # go back to Search menu
 
 
 def find_dates_range():
@@ -327,9 +329,11 @@ def find_dates_range():
             return  # go back to Search menu
         try:
             from_date = datetime.datetime.strptime(from_date,
-                                                   date_fmt).date()
+                                                   date_fmt)
+            from_date = from_date.date()
             to_date = datetime.datetime.strptime(to_date,
-                                                 date_fmt).date()
+                                                 date_fmt)
+            to_date = to_date.date()
         except ValueError:
             input("Invalid date!!!, press Enter to try again...")
             continue
@@ -341,7 +345,7 @@ def find_dates_range():
             for entry in entries:
                 selected_entries.append(entry)
             display_entries(selected_entries)
-            return  # go back to Search menu
+            return len(selected_entries)  # go back to Search menu
 
 
 def find_time_spent():
@@ -368,7 +372,7 @@ def find_time_spent():
             for entry in entries:
                 selected_entries.append(entry)
             display_entries(selected_entries)
-            return  # go back to Search menu
+            return len(selected_entries)  # go back to Search menu
 
 
 def find_phrase():
@@ -386,7 +390,7 @@ def find_phrase():
     for entry in entries:
         selected_entries.append(entry)
     display_entries(selected_entries)
-    return  # go back to Search menu
+    return len(selected_entries) # go back to Search menu
 
 
 def quit_menu():
