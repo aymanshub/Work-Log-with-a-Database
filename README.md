@@ -1,5 +1,7 @@
 # Work Log with a Database
 A console program where employees can officially record their daily tasks.
+The records will be stored in a dedicated Data-Base and table.
+
 Each task consists of:
   * Employee name
   * Task title
