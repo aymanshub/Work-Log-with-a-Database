@@ -120,3 +120,4 @@ dmypy.json
 .idea/encodings.xml
 .idea/codeStyles/Project.xml
 .idea/codeStyles/codeStyleConfig.xml
+*.db

@@ -1,5 +1,5 @@
 """
-
+Bunch of utils used for the work log Database program
 """
 import os
 import datetime
@@ -145,6 +145,7 @@ def add_entry():
     else:
         return True
 
+
 def display_entries(entries):
     """
     Display the selected entries resulted by a user search criteria.
@@ -253,7 +254,7 @@ def find_employee():
             first_name, sep, last_name = name.partition(' ')
             if last_name:
                 # we've got a full name and should search for exact match
-                last_name = last_name.strip() # avoid multiple spaces between first & last
+                last_name = last_name.strip()
                 entries = Entry.select().where(
                     (Entry.first_name == first_name) &
                     (Entry.last_name == last_name)
@@ -276,19 +277,23 @@ def find_date():
     while True:
         # clear the screen
         os.system("cls" if os.name == "nt" else "clear")
-        print("From below dates list\nPlease select a date index: ")
-        print("(Enter 'r' to Return to Search menu)")
         dates_query = Entry.select(Entry.date)\
             .distinct()\
             .order_by(Entry.date.desc())
+        if not dates_query:
+            print("No entries to search for!, Work Log Data-Base is empty.")
+        else:
+            print("From below dates list\nPlease select a date index: ")
+        print("(Enter 'r' to Return to Search menu)")
         counter = 1
         for record in dates_query:
             print('{counter}.\t{date}'
-                  .format(counter=counter, date=record.date.strftime(date_fmt)))
+                  .format(counter=counter,
+                          date=record.date.strftime(date_fmt)))
             counter += 1
         user_input = input()
         if user_input.upper() == 'r'.upper():
-            return  # return to Search menu
+            return True  # return to Search menu
         else:
             try:
                 index = int(user_input)
@@ -340,7 +345,7 @@ def find_dates_range():
         else:
             # locate records within the requested dates range
             entries = Entry.select().where(
-                Entry.date.between(from_date,to_date))
+                Entry.date.between(from_date, to_date))
             selected_entries = []
             for entry in entries:
                 selected_entries.append(entry)
@@ -390,7 +395,7 @@ def find_phrase():
     for entry in entries:
         selected_entries.append(entry)
     display_entries(selected_entries)
-    return len(selected_entries) # go back to Search menu
+    return len(selected_entries)  # go back to Search menu
 
 
 def quit_menu():

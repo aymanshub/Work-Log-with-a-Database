@@ -1,22 +1,14 @@
+"""
+The unit-tests used for the work log Database program.
+note: running the tests will empty the DB table.
+"""
 import datetime
 from unittest import mock
 import unittest
-from collections import namedtuple
 import util
-import builtins
 import work_log_wDB
-import os
-from peewee import *
 
-
-# db_test = SqliteDatabase('work_logTests.db')
 date_fmt = '%d/%m/%Y'
-
-
-# def initialize_tests_db():
-#     """Create the database and the table if they don't exist."""
-#     db_test.connect()
-#     util.db.create_tables([util.Entry], safe=True)
 
 
 class EditDelete(unittest.TestCase):
@@ -33,8 +25,9 @@ class EditDelete(unittest.TestCase):
     def tearDown(self):
         try:
             util.Entry.delete().execute()
-        except:
-            pass
+        except Exception as e:
+            print("Error occurred during tear down of {}\n{}"
+                  .format(self.__class__, e))
         util.db.close()
 
     @mock.patch('builtins.print', autospec=True)
@@ -79,15 +72,17 @@ class Representations(unittest.TestCase):
     def tearDown(self):
         try:
             util.Entry.delete().execute()
-        except:
-            pass
+        except Exception as e:
+            print("Error occurred during tear down of {}\n{}"
+                  .format(self.__class__, e))
         util.db.close()
 
     @mock.patch('os.system', autospec=True)
     @mock.patch('builtins.print', autospec=True)
     @mock.patch.object(util.Entry, 'edit_task', autospec=False)
     @mock.patch.object(util.Entry, 'delete_task', autospec=False)
-    def test_display_entries(self, mock_delete_task, mock_edit_task, mock_print, mock_os):
+    def test_display_entries(self, mock_delete_task, mock_edit_task,
+                             mock_print, mock_os):
         # no entries to display
         entries = []
         with mock.patch('builtins.input', return_value="r"):
@@ -115,6 +110,8 @@ class Representations(unittest.TestCase):
         mock_delete_task.reset_mock()
         with mock.patch('builtins.input', side_effect=["n", "b", "r"]):
             result = util.display_entries(entries)
+            self.assertEqual(2, len(entries))
+            self.assertEqual(result, True)
             mock_edit_task.assert_not_called()
             mock_delete_task.assert_not_called()
 
@@ -181,7 +178,8 @@ class Menus(unittest.TestCase):
                             mock_print,
                             mock_os,
                             ):
-        with mock.patch('builtins.input', side_effect=["e", "d", "r", "t", "p", "q"]):
+        with mock.patch('builtins.input',
+                        side_effect=["e", "d", "r", "t", "p", "q"]):
             work_log_wDB.search_entries()
             mock_find_employee.assert_called_once_with()
             mock_find_date.assert_called_once_with()
@@ -199,14 +197,15 @@ class SearchMethods(unittest.TestCase):
                                               task_name='test str',
                                               date=datetime.date(2019, 3, 26),
                                               time_spent=30,
-                                              notes='can you find this? in your test',
+                                              notes='can you find this?',
                                               )
 
     def tearDown(self):
         try:
             util.Entry.delete().execute()
-        except:
-            pass
+        except Exception as e:
+            print("Error occurred during tear down of {}\n{}"
+                  .format(self.__class__, e))
         util.db.close()
 
     @mock.patch.object(util, 'display_entries', autospec=True)
@@ -234,6 +233,15 @@ class SearchMethods(unittest.TestCase):
 
     @mock.patch('builtins.print', autospec=True)
     @mock.patch.object(util, 'display_entries', autospec=True)
+    def test_find_date_with_emptyDB(self, mock_display_entries, mock_print):
+        with mock.patch('builtins.input', return_value="r"):
+            self.entry_sample.delete_instance()
+            result = util.find_date()
+            self.assertEqual(result, True)
+            mock_display_entries.assert_not_called()
+
+    @mock.patch('builtins.print', autospec=True)
+    @mock.patch.object(util, 'display_entries', autospec=True)
     def test_find_employee(self, mock_display_entries, mock_print):
         with mock.patch('builtins.input', return_value="ayman said"):
             result = util.find_employee()
@@ -253,18 +261,18 @@ class SearchMethods(unittest.TestCase):
             entries = util.look_for_partners("George")
             self.assertEqual(None, entries)
 
-
-    #find_dates_range
+    # find_dates_range
     @mock.patch('builtins.print', autospec=True)
     @mock.patch.object(util, 'display_entries', autospec=True)
     def test_find_dates_range(self, mock_display_entries, mock_print):
-        with mock.patch('builtins.input', side_effect=['26/3/2019', '30/3/2019']):
+        with mock.patch('builtins.input',
+                        side_effect=['26/3/2019', '30/3/2019']):
             result = util.find_dates_range()
             self.assertEqual(1, result)
             mock_display_entries.assert_called_once()
 
 
-class AddEntries(unittest.TestCase):
+class AddEntry(unittest.TestCase):
     def setUp(self):
         work_log_wDB.initialize()
         self.entry_sample = util.Entry.create(first_name='ayman',
@@ -272,14 +280,15 @@ class AddEntries(unittest.TestCase):
                                               task_name='test str',
                                               date=datetime.date(2019, 3, 26),
                                               time_spent=30,
-                                              notes='can you find this? in your test',
+                                              notes='can you find this?',
                                               )
 
     def tearDown(self):
         try:
             util.Entry.delete().execute()
-        except:
-            pass
+        except Exception as e:
+            print("Error occurred during tear down of {}\n{}"
+                  .format(self.__class__, e))
         util.db.close()
 
     @mock.patch.object(util, 'set_entry_core_values', autospec=False)
