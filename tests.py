@@ -1,5 +1,5 @@
 """
-The unit-tests used for the work log Database program.
+Unit-tests used for the work log Database program.
 note: running the tests will empty the DB table.
 """
 import datetime

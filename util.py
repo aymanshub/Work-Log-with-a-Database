@@ -68,7 +68,12 @@ class Entry(Model):
 
 
 def set_entry_core_values(for_edit=False):
-
+    """
+    Sets all the task parameters except for the name of the employee.
+    These settings are common for adding a new task or editing an existing one.
+    :param for_edit: a flag that indicates if the function is called for editing
+    :return: a CoreValues nametuple object holding the set core values of a task.
+    """
     CoreValues = namedtuple('CoreValues', [
         'task_name',
         'task_date',
@@ -150,7 +155,7 @@ def display_entries(entries):
     """
     Display the selected entries resulted by a user search criteria.
     :param entries: list of Task instances
-    :return: None
+    :return: True
     """
     i = 0
     while True:
@@ -197,6 +202,13 @@ def display_entries(entries):
 
 
 def look_for_partners(name):
+    """
+    Looks for existing entries holding the name input.
+    Used in search by employee name when the user doesn't enter a full name.
+    :param name: string representing a first\last name
+    :return: entries: entries having the given name or
+             None: if there is no match
+    """
 
     potential_entries = Entry \
         .select(Entry.first_name, Entry.last_name) \
@@ -264,8 +276,9 @@ def find_employee():
                 entries = look_for_partners(name)
 
             selected_entries = []
-            for entry in entries:
-                selected_entries.append(entry)
+            if entries is not None:
+                for entry in entries:
+                    selected_entries.append(entry)
             display_entries(selected_entries)
             return len(selected_entries)  # go back to Search menu
         else:
@@ -300,8 +313,6 @@ def find_date():
                 if 1 <= index < counter:
                     # locate records with selected index date
                     selected_date = dates_query[index-1].date
-                    # entries = Entry.select() \
-                    #   .where(Entry.date.cast(datetime.date) == selected_date)
                     entries = Entry.select().where(
                         (Entry.date.year == selected_date.year) &
                         (Entry.date.month == selected_date.month) &

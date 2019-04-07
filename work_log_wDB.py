@@ -6,12 +6,8 @@ Developed by: Ayman Said
 Mar-2019
 """
 import os
-
 from collections import OrderedDict
 import util
-
-# import params
-# from tasks import Task
 
 
 def initialize():
